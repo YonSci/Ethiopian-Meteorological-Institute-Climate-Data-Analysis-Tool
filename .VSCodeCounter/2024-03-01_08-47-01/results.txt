@@ -1,0 +1,33 @@
+Date : 2024-03-01 08:47:01
+Directory : c:\Users\Ymersha\Documents\EMI_APP\emi_app1\app
+Total : 9 files,  1948 codes, 101 comments, 366 blanks, all 2415 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| Python   |          9 |      1,948 |        101 |        366 |      2,415 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++-----------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                              | files      | code       | comment    | blank      | total      |
++-----------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                 |          9 |      1,948 |        101 |        366 |      2,415 |
++-----------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++-----------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                                          | language | code       | comment    | blank      | total      |
++-----------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| c:\Users\Ymersha\Documents\EMI_APP\emi_app1\app\Data_Converter_Summary.py         | Python   |        249 |         14 |         93 |        356 |
+| c:\Users\Ymersha\Documents\EMI_APP\emi_app1\app\Data_Importing_Module.py          | Python   |        340 |         11 |         88 |        439 |
+| c:\Users\Ymersha\Documents\EMI_APP\emi_app1\app\Indices_Calculator.py             | Python   |          3 |          1 |          5 |          9 |
+| c:\Users\Ymersha\Documents\EMI_APP\emi_app1\app\Interpolation_netCDF_convector.py | Python   |          3 |          1 |          4 |          8 |
+| c:\Users\Ymersha\Documents\EMI_APP\emi_app1\app\Landing_Page.py                   | Python   |         41 |          2 |         19 |         62 |
+| c:\Users\Ymersha\Documents\EMI_APP\emi_app1\app\Mapping_module.py                 | Python   |          3 |          1 |          5 |          9 |
+| c:\Users\Ymersha\Documents\EMI_APP\emi_app1\app\Missing_Data.py                   | Python   |      1,288 |         66 |        138 |      1,492 |
+| c:\Users\Ymersha\Documents\EMI_APP\emi_app1\app\dataload.py                       | Python   |         10 |          3 |          6 |         19 |
+| c:\Users\Ymersha\Documents\EMI_APP\emi_app1\app\missing.py                        | Python   |         11 |          2 |          8 |         21 |
+| Total                                                                             |          |      1,948 |        101 |        366 |      2,415 |
++-----------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
