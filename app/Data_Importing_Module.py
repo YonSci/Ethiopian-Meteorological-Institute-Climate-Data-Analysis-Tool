@@ -7,8 +7,6 @@ def Data_Importing_Module():
     info = """
         <div style="text-align: justify; color:blue; font-family: Arial, Helvetica, sans-serif;">
 
-        <h3>Welcome to the Data Importing Page!</h3>
-
         <p>This page provides an interactive and user-friendly interface to configure the input settings, upload data, and display the loaded data for further analysis.</p>
 
         <ol>
