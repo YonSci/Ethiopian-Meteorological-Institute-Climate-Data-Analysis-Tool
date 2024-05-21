@@ -18,7 +18,7 @@ def authenticate(username, password):
     if username in stored_credentials:
         stored_hashed_password = stored_credentials[username]["hashed_password"]
         # Check if the entered password matches the stored hashed password
-        return bcrypt.checkpw(password.encode("utf-8"), stored_hashed_password("utf-8"))
+        return bcrypt.checkpw(password.encode("utf-8"), stored_hashed_password)
 
     return False
 
