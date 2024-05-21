@@ -1,6 +1,3 @@
-Certainly! Here's the Markdown text you can use for your GitHub repository:
-
-```markdown
 # EMI-CDAT: Ethiopian Meteorological Institute Climate Data Analysis Tool  🌦️🌍🚀
 
 EMI-CDAT is designed to streamline the data workflow within the Meteorological Data and Climatology Directorate of the Ethiopian Meteorological Institute. Its primary purpose is to facilitate the production of climate bulletins, including monthly, seasonal, and annual reports. Here are the key features of EMI-CDAT:
@@ -34,5 +31,3 @@ EMI-CDAT is designed to streamline the data workflow within the Meteorological D
 
 By combining these features, EMI-CDAT provides an efficient and well-structured tool for climate data analysis and reporting.
 
-
-```
