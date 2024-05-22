@@ -1,20 +1,14 @@
-import bcrypt
 import pickle
 from pathlib import Path
 
-# Example user credentials
-usernames = ["yonas", "teferi"]
-passwords = ["yon", "tef"]
+import streamlit_authenticator as stauth
 
-# Hash the passwords
-hashed_passwords = [bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()) for password in passwords]
+names = ["Yonas Mersha", "Asaminew Teshome", "Teferi Demissie", "Melesse Lemma", "Bezuneh Sego"]
+usernames = ["yonas", "asaminew", "teferi", "melesse", "bezuneh" ]
+passwords = ["yonas123", "asaminew123", "teferi123", "melesse123", "bezuneh123"]
 
-# Print the hashed passwords to verify
-print("Hashed Passwords:")
-for hp in hashed_passwords:
-    print(hp)
+hashed_passwords = stauth.Hasher(passwords).generate()
 
-# Save the hashed passwords
 file_path = Path(__file__).parent / "hashed_pw.pkl"
 with file_path.open("wb") as file:
     pickle.dump(hashed_passwords, file)
