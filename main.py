@@ -5,28 +5,18 @@ import streamlit as st
 import streamlit_authenticator as stauth
 
 # --- USER AUTHENTICATION ---
-names = ["Yonas Mersha", "Teferi Demissie"]
-usernames = ["yonas", "teferi"]
+names = ["Yonas Mersha", "Asaminew Teshome", "Teferi Demissie", "Melesse Lemma", "Bezuneh Sego"]
+usernames = ["yonas", "asaminew", "teferi", "melesse", "bezuneh" ]
 
-# Load hashed passwords
+# load hashed passwords
 file_path = Path(__file__).parent / "hashed_pw.pkl"
 with file_path.open("rb") as file:
     hashed_passwords = pickle.load(file)
 
-# Ensure the passwords are in the correct format (bytes)
-hashed_passwords = [pwd.encode('utf-8') if isinstance(pwd, str) else pwd for pwd in hashed_passwords]
-
-authenticator = stauth.Authenticate(names, usernames, hashed_passwords, "sales_dashboard", "abcdef", cookie_expiry_days=30)
+authenticator = stauth.Authenticate(names, usernames, hashed_passwords,
+    "sales_dashboard", "abcdef", cookie_expiry_days=30)
 
 name, authentication_status, username = authenticator.login("Login", "main")
-
-# Debug statements to check authentication status
-st.write(f"Authentication status: {authentication_status}")
-st.write(f"Username: {username}")
-st.write(f"Name: {name}")
-
-# Add more debug information
-st.write(f"Hashed Passwords: {hashed_passwords}")
 
 if authentication_status == False:
     st.error("Username/password is incorrect")
