@@ -4,18 +4,19 @@ from pathlib import Path
 import streamlit as st  
 import streamlit_authenticator as stauth  
 
-
 # --- USER AUTHENTICATION ---
 names = ["Yonas Mersha", "Teferi Demissie"]
 usernames = ["yonas", "teferi"]
 
-# load hashed passwords
+# Load hashed passwords
 file_path = Path(__file__).parent / "hashed_pw.pkl"
 with file_path.open("rb") as file:
     hashed_passwords = pickle.load(file)
 
-authenticator = stauth.Authenticate(names, usernames, hashed_passwords,
-    "sales_dashboard", "abcdef", cookie_expiry_days=30)
+# Ensure the passwords are in the correct format
+hashed_passwords = [pwd.encode('utf-8') if isinstance(pwd, str) else pwd for pwd in hashed_passwords]
+
+authenticator = stauth.Authenticate(names, usernames, hashed_passwords, "sales_dashboard", "abcdef", cookie_expiry_days=30)
 
 name, authentication_status, username = authenticator.login("Login", "main")
 
@@ -26,7 +27,6 @@ if authentication_status == None:
     st.warning("Please enter your username and password")
 
 if authentication_status:
-    
     from app.Landing_Page import Landing_Page
     from app.Data_Importing_Module import Data_Importing_Module
     from app.Missing_Data import Missing_Data
@@ -49,18 +49,12 @@ if authentication_status:
         }
         
         choice = st.sidebar.selectbox("Go to", list(pages.keys()))
-        
 
         # Instantiate the chosen class
         selected_page = pages[choice]()
-        
         
         authenticator.logout("Logout", "sidebar")
         st.sidebar.subheader(f"Welcome {name}")
         
     if __name__ == "__main__":
         main()
-        
-        
-
-        
