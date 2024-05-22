@@ -61,8 +61,7 @@ if authentication_status:
         # Instantiate the chosen class
         selected_page = pages[choice]()
         
-        authenticator.logout("Logout", "sidebar")
-        st.sidebar.subheader(f"Welcome {name}")
+
         
     if __name__ == "__main__":
         main()
