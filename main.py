@@ -1,107 +1,66 @@
-import streamlit as st
-import bcrypt
 import pickle
+from pathlib import Path
 
-page_icon = "images\logo4.jpg"
-
-st.set_page_config(
-    page_title="Main Page",
-    page_icon=page_icon,
-    layout="centered"  # wide, centered
-    )
+import streamlit as st  
+import streamlit_authenticator as stauth  # pip install streamlit-authenticator
 
 
-def authenticate(username, password):
-    stored_credentials = load_user_credentials()
+# --- USER AUTHENTICATION ---
+names = ["Yonas Mersha", "Teferi Demissie"]
+usernames = ["yonas", "teferi"]
 
-    # Check if the entered username exists in the credentials
-    if username in stored_credentials:
-        stored_hashed_password = stored_credentials[username]["hashed_password"]
-        # Check if the entered password matches the stored hashed password
-        entered_password = password.encode("utf-8")
-        return bcrypt.checkpw(entered_password, stored_hashed_password)
+# load hashed passwords
+file_path = Path(__file__).parent / "hashed_pw.pkl"
+with file_path.open("rb") as file:
+    hashed_passwords = pickle.load(file)
 
-    return False
+authenticator = stauth.Authenticate(names, usernames, hashed_passwords,
+    "sales_dashboard", "abcdef", cookie_expiry_days=30)
 
+name, authentication_status, username = authenticator.login("Login", "main")
 
-# Function to load user credentials from the pickle file
-def load_user_credentials(filename="user_credentials.pkl"):
-    try:
-        with open(filename, "rb") as file:
-            return pickle.load(file)
-    except FileNotFoundError:
-        return {}
+if authentication_status == False:
+    st.error("Username/password is incorrect")
 
-# Function to create session state
-def create_session_state():
-    if "authenticated" not in st.session_state:
-        st.session_state.authenticated = False
+if authentication_status == None:
+    st.warning("Please enter your username and password")
+
+if authentication_status:
+    
+    from app.Landing_Page import Landing_Page
+    from app.Data_Importing_Module import Data_Importing_Module
+    from app.Missing_Data import Missing_Data
+    from app.Data_Conversion import Data_Conversion
+    from app.Indices_Calculator import Indices_Calculator
+    from app.Interpolation_netCDF_convector import Interpolation_netCDF_convector
+    from app.Mapping_module import Mapping_module
+
+    def main():
+        st.sidebar.title("Navigation Bar")
+        
+        pages = {
+            "Landing Page": Landing_Page,
+            "Data Importing Module": Data_Importing_Module,
+            "Data Review Module": Missing_Data, 
+            "Data Conversion & Summary Statistics": Data_Conversion,
+            "Indices Calculator Module": Indices_Calculator, 
+            "Interpolation & netCDF Convector Module": Interpolation_netCDF_convector, 
+            "Mapping Module": Mapping_module
+        }
+        
+        choice = st.sidebar.selectbox("Go to", list(pages.keys()))
         
 
-# Function to reset the authentication status and rerun the script
-def logout():
-    st.session_state.authenticated = False
-    st.rerun()
-
-# Login page
-def login_page():
-    st.title(':blue[Login Page] 🔒')
-
-    username = st.text_input("Username:")
-    password = st.text_input("Password:", type="password")
-    login_button = st.button("Login")
-
-    if login_button:
-        if authenticate(username, password):
-            st.success("Login successful!")
-            st.session_state.authenticated = True
-            st.rerun()
-        else:
-            st.error("Invalid credentials. Please try again.")
-    
-from app.Landing_Page import Landing_Page
-from app.Data_Importing_Module import Data_Importing_Module
-from app.Missing_Data import Missing_Data
-from app.Data_Conversion import Data_Conversion
-from app.Indices_Calculator import Indices_Calculator
-from app.Interpolation_netCDF_convector import Interpolation_netCDF_convector
-from app.Mapping_module import Mapping_module
-
-def main():
-    st.sidebar.title("Navigation Bar")
-    
-    pages = {
-        "Landing Page": Landing_Page,
-        "Data Importing Module": Data_Importing_Module,
-        "Data Review Module": Missing_Data, 
-        "Data Conversion & Summary Statistics": Data_Conversion,
-        "Indices Calculator Module": Indices_Calculator, 
-        "Interpolation & netCDF Convector Module": Interpolation_netCDF_convector, 
-        "Mapping Module": Mapping_module
-    }
-    
-    choice = st.sidebar.selectbox("Go to", list(pages.keys()))
-    
-
-    # Instantiate the chosen class
-    selected_page = pages[choice]()
-    
-    
-    # Add logout button to the sidebar
-    if st.sidebar.button("Logout"):
-        logout()
+        # Instantiate the chosen class
+        selected_page = pages[choice]()
         
         
-
-    
-if __name__ == "__main__":
-    # Create session state
-    create_session_state()
-
-    # Check if user is authenticated
-    if not st.session_state.authenticated:
-        # If not authenticated, show login page
-        login_page()
-    else:
-        # If authenticated, show landing page
+        authenticator.logout("Logout", "sidebar")
+        st.sidebar.subheader(f"Welcome {name}")
+        
+    if __name__ == "__main__":
         main()
+        
+        
+
+        
