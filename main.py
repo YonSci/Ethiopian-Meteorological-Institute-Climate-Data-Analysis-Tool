@@ -25,6 +25,9 @@ st.write(f"Authentication status: {authentication_status}")
 st.write(f"Username: {username}")
 st.write(f"Name: {name}")
 
+# Add more debug information
+st.write(f"Hashed Passwords: {hashed_passwords}")
+
 if authentication_status == False:
     st.error("Username/password is incorrect")
 
