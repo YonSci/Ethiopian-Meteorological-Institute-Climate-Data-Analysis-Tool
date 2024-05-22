@@ -17,4 +17,3 @@ streamlit==1.32.2
 verde==1.8.0
 xarray==2024.3.0
 bcrypt==4.1.2
-pickle
