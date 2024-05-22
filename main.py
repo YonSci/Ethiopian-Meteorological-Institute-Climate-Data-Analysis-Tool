@@ -10,19 +10,19 @@ st.set_page_config(
     layout="centered"  # wide, centered
     )
 
+
 def authenticate(username, password):
     stored_credentials = load_user_credentials()
 
     # Check if the entered username exists in the credentials
     if username in stored_credentials:
         stored_hashed_password = stored_credentials[username]["hashed_password"]
-        # Ensure that the stored hashed password is a bytes-like object
-        if isinstance(stored_hashed_password, str):
-            stored_hashed_password = stored_hashed_password.encode("utf-8")
         # Check if the entered password matches the stored hashed password
-        return bcrypt.checkpw(password.encode("utf-8"), stored_hashed_password)
+        entered_password = password.encode("utf-8")
+        return bcrypt.checkpw(entered_password, stored_hashed_password)
 
     return False
+
 
 # Function to load user credentials from the pickle file
 def load_user_credentials(filename="user_credentials.pkl"):
