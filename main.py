@@ -1,5 +1,5 @@
 import streamlit as st
-import bcrypt
+from passlib.context import CryptContext
 import pickle
 
 page_icon = "images/logo4.jpg"
@@ -10,14 +10,15 @@ st.set_page_config(
     layout="centered"
 )
 
+# Initialize passlib context for bcrypt
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 def authenticate(username, password):
     stored_credentials = load_user_credentials()
 
     if username in stored_credentials:
         stored_hashed_password = stored_credentials[username]["hashed_password"]
-        if isinstance(stored_hashed_password, str):
-            stored_hashed_password = stored_hashed_password.encode("utf-8")
-        return bcrypt.checkpw(password.encode("utf-8"), stored_hashed_password)
+        return pwd_context.verify(password, stored_hashed_password)
 
     return False
 
