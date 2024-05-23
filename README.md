@@ -1,5 +1,7 @@
 # EMI-CDAT: Ethiopian Meteorological Institute Climate Data Analysis Tool  🌦️🌍🚀
 
+**EMI-CDAT Web APP Link**: https://hwrzoccqzrukrpxz4bijex.streamlit.app
+
 EMI-CDAT is designed to streamline the data workflow within the Meteorological Data and Climatology Directorate of the Ethiopian Meteorological Institute. Its primary purpose is to facilitate the production of climate bulletins, including monthly, seasonal, and annual reports. Here are the key features of EMI-CDAT:
 
 1. **Automated Data Processing**:
