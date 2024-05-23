@@ -59,15 +59,3 @@ def main():
         
         
 
-    
-if __name__ == "__main__":
-    # Create session state
-    create_session_state()
-
-    # Check if user is authenticated
-    if not st.session_state.authenticated:
-        # If not authenticated, show login page
-        login_page()
-    else:
-        # If authenticated, show landing page
-        main()
