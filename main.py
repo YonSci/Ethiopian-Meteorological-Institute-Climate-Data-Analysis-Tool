@@ -2,12 +2,12 @@ import streamlit as st
 import bcrypt
 import pickle
 
-page_icon = "images\logo4.jpg"
+page_icon = "images/logo4.jpg"
 
 st.set_page_config(
     page_title="Main Page",
     page_icon=page_icon,
-    layout="centered"  # wide, centered
+    layout="centered"
 )
 
 def authenticate(username, password):
