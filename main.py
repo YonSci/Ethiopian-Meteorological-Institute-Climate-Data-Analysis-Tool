@@ -1,6 +1,5 @@
 import streamlit as st
-import bcrypt
-import pickle
+import streamlit_authenticator as stauth
 
 page_icon = "images\logo4.jpg"
 
