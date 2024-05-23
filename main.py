@@ -23,7 +23,7 @@ authenticator = stauth.Authenticate(
     config['pre-authorized']
 )
 
-authenticator.login()
+authenticator.login(main)
 
 
     
