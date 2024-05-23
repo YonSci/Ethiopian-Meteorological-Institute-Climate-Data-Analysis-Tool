@@ -10,6 +10,18 @@ st.set_page_config(
     layout="centered"  # wide, centered
     )
 
+
+# Hash a password for the first time
+password = "super_secret_password"
+hashed = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
+
+# Check that an unhashed password matches one that has previously been hashed
+if bcrypt.checkpw(password.encode("utf-8"), hashed):
+    print("It matches!")
+else:
+    print("It does not match.")
+
+
 # # Function to authenticate users
 # def authenticate(username, password):
 #     stored_credentials = load_user_credentials()
