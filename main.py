@@ -23,6 +23,8 @@ authenticator = stauth.Authenticate(
     config['pre-authorized']
 )
 
+authenticator.login()
+
 
     
 from app.Landing_Page import Landing_Page
