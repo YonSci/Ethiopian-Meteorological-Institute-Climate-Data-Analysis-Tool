@@ -61,7 +61,7 @@ def monthly_rainfall():
         
         uploaded_file = st.file_uploader("Choose a NetCDF file",
                                         type=["nc"], key='uploaded_file1')
-        print(xr.backends.list_engines())
+        st.write(xr.backends.list_engines())
 
         if uploaded_file is not None:
         # Read the uploaded file
