@@ -60,7 +60,7 @@ def monthly_rainfall():
         st.markdown("#### :blue[Upload monthly rainfall NetCDF File]" )
         
         uploaded_file = st.file_uploader("Choose a NetCDF file",
-                                        type=["nc"], key='uploaded_file1')
+                                        type=[".nc", ".nc4"], key='uploaded_file1')
         st.write(xr.backends.list_engines())
 
         if uploaded_file is not None:
