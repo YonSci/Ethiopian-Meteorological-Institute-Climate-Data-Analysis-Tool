@@ -40,7 +40,9 @@ def seasonal_minimum_temperature():
                                         type=["nc"], key='uploaded_file1')
         if uploaded_file is not None:
         # Read the uploaded file
-            ds_temp_min = xr.open_dataset(io.BytesIO(uploaded_file.read()))
+            ds = xr.open_dataset(io.BytesIO(uploaded_file.read()), engine='netcdf4')
+
+            # ds_temp_min = xr.open_dataset(io.BytesIO(uploaded_file.read()))
             temp_min = ds_temp_min[variable][:, :]
             lon = ds_temp_min['Longitude'][:]
             lat = ds_temp_min['Latitude'][:]
