@@ -19,3 +19,5 @@ xarray==2024.3.0
 streamlit_authenticator==0.1.5
 passlib[bcrypt]
 h5netcdf
+netCDF4 
+h5py
