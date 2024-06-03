@@ -37,7 +37,9 @@ def monthly_maximum_temperature():
                                         type=["nc"], key='uploaded_file1')
         if uploaded_file is not None:
         # Read the uploaded file
-            ds_temp_max = xr.open_dataset(io.BytesIO(uploaded_file.read()))
+            ds = xr.open_dataset(io.BytesIO(uploaded_file.read()), engine='netcdf4')
+
+            # ds_temp_max = xr.open_dataset(io.BytesIO(uploaded_file.read()))
             temp_max = ds_temp_max[variable][:, :]
             lon = ds_temp_max['Longitude'][:]
             lat = ds_temp_max['Latitude'][:]
