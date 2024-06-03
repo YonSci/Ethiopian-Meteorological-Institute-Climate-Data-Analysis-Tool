@@ -63,7 +63,7 @@ def monthly_rainfall():
                                         type=["nc"], key='uploaded_file1')
         if uploaded_file is not None:
         # Read the uploaded file
-            ds = xr.open_dataset(io.BytesIO(uploaded_file.read()), engine='netcdf4')
+            ds = xr.open_dataset(io.BytesIO(uploaded_file.read()), engine='h5netcdf')
             # ds = xr.open_dataset(io.BytesIO(uploaded_file.read()))
             rain = ds[variable][:, :]
             lon = ds['Longitude'][:]
