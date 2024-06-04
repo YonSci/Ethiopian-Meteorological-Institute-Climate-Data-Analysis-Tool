@@ -15,7 +15,7 @@ seaborn==0.13.2
 Shapely==2.0.4
 streamlit==1.32.2
 verde==1.8.0
-xarray==2024.3.0
+xarray[complete]
 streamlit_authenticator==0.1.5
 passlib[bcrypt]
 h5netcdf
