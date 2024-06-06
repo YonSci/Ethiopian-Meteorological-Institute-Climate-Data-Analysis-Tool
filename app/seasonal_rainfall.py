@@ -7,7 +7,7 @@ import cartopy.feature as cfeature
 import geopandas as gpd
 from matplotlib.colors import BoundaryNorm, ListedColormap
 import matplotlib.colors as mcolors
-
+import netCDF4 as nc
 import io
 
 
@@ -40,6 +40,7 @@ def seasonal_rainfall():
         lat = None
         rain = None
         ds = None
+     
 
         # Load the shapefile
         ethiopia = gpd.read_file('ethiopia/gadm36_ETH_0.shp')
@@ -48,18 +49,43 @@ def seasonal_rainfall():
             
         st.markdown("---")
         
-        st.markdown("#### :blue[Upload seasonal rainfall NetCDF File]" )
-        
-        uploaded_file = st.file_uploader("Choose a NetCDF file",
-                                        type=["nc"], key='uploaded_file1')
+        st.markdown("#### :blue[Upload Seasonal Rainfall NetCDF File]" )
+
+        uploaded_file = st.file_uploader("Upload a NetCDF file")
+
+        # Check if a file has been uploaded
         if uploaded_file is not None:
-        # Read the uploaded file
-            ds = xr.open_dataset(io.BytesIO(uploaded_file.read()), engine='netcdf4')
-            # ds = xr.open_dataset(io.BytesIO(uploaded_file.read()))
-            rain = ds[variable][:, :]
-            lon = ds['Longitude'][:]
-            lat = ds['Latitude'][:]
-            
+            try:
+                # Convert the uploaded file to BytesIO
+                file = io.BytesIO(uploaded_file.read())
+                
+                # Use netCDF4 to read the file
+                with nc.Dataset('dummy', mode='r', memory=file.read()) as ds:
+                    # Convert netCDF4 dataset to xarray Dataset
+                    data = xr.open_dataset(xr.backends.NetCDF4DataStore(ds))
+
+                    # Get latitude and longitude variables
+                    lon = data.coords["Longitude"]
+                    lat = data.coords["Latitude"]
+
+                    # Get the variable using netCDF4 dataset
+
+                    rain = data[variable][:, :]
+                   
+
+                    # Get the min and max values of the variable
+                    min_val = rain.min().values
+                    max_val = rain.max().values
+
+          
+
+            except Exception as e:
+                st.error(f"Error opening dataset: {e}")
+        else:
+            st.info("Please upload a NetCDF file.")
+
+
+
         st.markdown("---")
         
         st.markdown("#### :blue[Set Plotting Parameters]" )
@@ -155,9 +181,9 @@ def seasonal_rainfall():
                 # Choose plotting method
                 if plot_type == "Contour":
                     contour = ax.contourf(lon, lat, rain, 
-                                            levels=np.linspace(rain.min(),
-                                                                rain.max(), 
-                                                                contour_levels),
+                                            levels=np.linspace(min_val,
+                                                               max_val, 
+                                                               contour_levels),
                                             cmap=cmap, 
                                             extend=colorbar_extend.lower())
                     cbar = plt.colorbar(contour, orientation=colorbar_orientation.lower(), 
@@ -184,10 +210,13 @@ def seasonal_rainfall():
                 # Add gridlines with matched labels
                 
                 if grid:
-                   
+                    # ax.set_xticks(np.arange(min_lon, max_lon + grid_interval, grid_interval), crs=ccrs.PlateCarree())
+                    # ax.set_yticks(np.arange(min_lat, max_lat + grid_interval, grid_interval), crs=ccrs.PlateCarree())
                     gl = ax.gridlines(draw_labels=False, dms=False, x_inline=False, y_inline=False, linewidth=1, 
                                     color='gray', alpha=0.5, linestyle='--')
-                  
+                    # gl.xlocator = plt.FixedLocator(np.arange(min_lon, max_lon + grid_interval, grid_interval))
+                    # gl.ylocator = plt.FixedLocator(np.arange(min_lat, max_lat + grid_interval, grid_interval))
+                    
                     xticks = np.clip(np.arange(min_lon, max_lon + grid_interval, grid_interval), min_lon, max_lon)
                     yticks = np.clip(np.arange(min_lat, max_lat + grid_interval, grid_interval), min_lat, max_lat)
 
@@ -196,7 +225,10 @@ def seasonal_rainfall():
 
                     gl.xlocator = plt.FixedLocator(xticks)
                     gl.ylocator = plt.FixedLocator(yticks)
-
+                    
+                    
+                    
+                    
                     gl.top_labels = False
                     gl.right_labels = False
                     gl.xlabel_style = {'size': 12}
@@ -229,23 +261,19 @@ def seasonal_rainfall():
                 st.download_button(
                     label="Download Plot as Image",
                     data=buf,
-                    file_name=f"rainfall_plot_{variable_type}_{time_step}_{season}.png",
+                    file_name=f"rainfall_plot_{variable_type}_{time_step}.png",
                     mime="image/png"
                 )
         
-
+            
+      
             
     if plot_type == 'Seasonal Percent of Normal Rainfall':
         st.latex(r"PoN = \frac{Rainfall - Mean}{Std Deviation} \times 100")
         
         if variable_type == 'Rainfall':
             variable = 'Total Rainfall'
-        elif variable_type == 'Maximum Temperature':
-            variable = 'Mean Maximum Temperature'
-        elif variable_type == 'Minimum Temperature':
-            variable = 'Mean Minimum Temperature'
-        elif variable_type == 'Average temperature':
-            variable = 'Mean Temperature'
+      
             
             
         colormap_options = {
@@ -264,52 +292,139 @@ def seasonal_rainfall():
         # Load the shapefile
         ethiopia = gpd.read_file('ethiopia/gadm36_ETH_0.shp')
         ethiopia_reg = gpd.read_file('ethiopia/gadm36_ETH_1.shp')
+
+
+        var1 = var2 = var3 = None  # Initialize the variables
+
         
-        
-        st.markdown("#### :blue[Upload seasonal rainfall NetCDF File]" )
-        uploaded_file = st.file_uploader("Choose a NetCDF file", 
-                                        type=["nc"], key='uploaded_file2')
+        st.markdown("#### :blue[Upload seasonal Rainfall NetCDF File]" )
+        uploaded_file = st.file_uploader("Upload a NetCDF file", key='uploaded_file2')
+
+        # Check if a file has been uploaded
         if uploaded_file is not None:
-        # Read the uploaded file
-            ds = xr.open_dataset(io.BytesIO(uploaded_file.read()))
+            try:
+                # Convert the uploaded file to BytesIO
+                file = io.BytesIO(uploaded_file.read())
+                
+                # Use netCDF4 to read the file
+                with nc.Dataset('dummy', mode='r', memory=file.read()) as ds:
+                    # Convert netCDF4 dataset to xarray Dataset
+                    data_t = xr.open_dataset(xr.backends.NetCDF4DataStore(ds))
+
+                    # Get latitude and longitude variables
+                    lon = data_t.coords["Longitude"]
+                    lat = data_t.coords["Latitude"]
+
+                    # Get the variable using netCDF4 dataset
+
+                    var1 = data_t[variable][:, :]
+
+                    # st.write(var1.shape)
+                   
+
+                    # Get the min and max values of the variable
+                    min_val1 = var1.min().values
+                    max_val1 = var1.max().values
+
+
+            except Exception as e:
+                st.error(f"Error opening dataset: {e}")
+        else:
+            st.info("Please upload a NetCDF file.")
+
+
                     
+        
         st.markdown("#### :blue[Upload seasonal long term mean rainfall NetCDF File]" )
-        uploaded_file = st.file_uploader("Choose a NetCDF file", 
-                                        type=["nc"], key='uploaded_file3')
+
+        uploaded_file = st.file_uploader("Upload a NetCDF file",  key='uploaded_file3')
+
+        # Check if a file has been uploaded
         if uploaded_file is not None:
-        # Read the uploaded file
-            ds_mean = xr.open_dataset(io.BytesIO(uploaded_file.read()))
+            try:
+                # Convert the uploaded file to BytesIO
+                file = io.BytesIO(uploaded_file.read())
+                
+                # Use netCDF4 to read the file
+                with nc.Dataset('dummy', mode='r', memory=file.read()) as ds:
+                    # Convert netCDF4 dataset to xarray Dataset
+                    data_ltm = xr.open_dataset(xr.backends.NetCDF4DataStore(ds))
+
+                    # Get latitude and longitude variables
+                    lon = data_ltm.coords["Longitude"]
+                    lat = data_ltm.coords["Latitude"]
+
+                    # Get the variable using netCDF4 dataset
+
+                    var2 = data_ltm[variable][:, :]
+                   
+
+                    # Get the min and max values of the variable
+                    min_val2 = var2.min().values
+                    max_val2 = var2.max().values
+
+
+            except Exception as e:
+                st.error(f"Error opening dataset: {e}")
+        else:
+            st.info("Please upload a NetCDF file.")
+
         
                 
         st.markdown("#### :blue[Upload seasonal long term Std deviation rainfall NetCDF File]" )
-        uploaded_file = st.file_uploader("Choose a NetCDF file", 
-                                        type=["nc"], key='uploaded_file4')
+
+        uploaded_file = st.file_uploader("Upload a NetCDF file", key='uploaded_file4')
+
+        # Check if a file has been uploaded
         if uploaded_file is not None:
-        # Read the uploaded file
-            ds_std = xr.open_dataset(io.BytesIO(uploaded_file.read()))
+            try:
+                # Convert the uploaded file to BytesIO
+                file = io.BytesIO(uploaded_file.read())
+                
+                # Use netCDF4 to read the file
+                with nc.Dataset('dummy', mode='r', memory=file.read()) as ds:
+                    # Convert netCDF4 dataset to xarray Dataset
+                    data_std = xr.open_dataset(xr.backends.NetCDF4DataStore(ds))
+
+                    # Get latitude and longitude variables
+                    lon = data_std.coords["Longitude"]
+                    lat = data_std.coords["Latitude"]
+
+                    # Get the variable using netCDF4 dataset
+
+                    var3 = data_std[variable][:, :]
+                   
+
+                    # Get the min and max values of the variable
+                    min_val3 = var3.min().values
+                    max_val3 = var3.max().values
+
+
+            except Exception as e:
+                st.error(f"Error opening dataset: {e}")
+        else:
+            st.info("Please upload a NetCDF file.")
             
+            st.markdown("---")
 
-            # Extract the variables
-            var1 = ds['rfe']
-            var2 = ds_mean['rfe']
-            var3 = ds_std['rfe']
-            
+    
 
-            # # Get the rainfall data
-            rain11 = var1.isel(time=0)
-            rain22 = var2.isel(time=0)
-            rain33 = var3.isel(time=0)
+        # Calculate departure, intermediate, and percentage normal rainfall
 
-            # # Calculate departure, intermediate, and percentage normal rainfall
-            dep_rain = rain11 - rain22
-            inter_rain = dep_rain / rain33
+        if var1 is not None and var2 is not None and var3 is not None:
+
+            var11= var1.isel(time=0)
+            var22 = var2.isel(time=0)
+            var33 = var3.isel(time=0)
+
+            dep_rain = var11 - var22
+            inter_rain = dep_rain / var33
             pn_rain = inter_rain * 100
 
-            lon = ds['lon'].values
-            lat = ds['lat'].values
+            # lon = ds['lon'].values
+            # lat = ds['lat'].values
             
-            
-            # # Define the levels and colormap
+            # Define the levels and colormap
             levels = [0, 75, 125, 300]
             
             
@@ -370,7 +485,7 @@ def seasonal_rainfall():
             st.markdown("---")
 
             st.markdown("#### :blue[Display Percent of Noraml Rainfall]" )  
-            if ds and ds_mean and ds_std is not None:
+            if data_t and data_ltm and data_std is not None:
                 if st.checkbox("Plot Percent of Normal Rainfall Data", key="_display"):
                     fig, ax = plt.subplots(figsize=(12, 8), 
                                             subplot_kw={'projection': ccrs.PlateCarree()},
@@ -510,7 +625,8 @@ def seasonal_rainfall():
                     )
              
                     
-                
+    var4 = var5 = None  # Initialize the variables
+          
     
     if plot_type == 'Departure of Seasonal Total Rainfall':
         if variable_type == 'Rainfall':
@@ -538,40 +654,95 @@ def seasonal_rainfall():
         ethiopia_reg = gpd.read_file('ethiopia/gadm36_ETH_1.shp')
         
         
-        st.markdown("#### :blue[Upload seasonal rainfall NetCDF File]" )
-        uploaded_file = st.file_uploader("Choose a NetCDF file", 
-                                        type=["nc"], key='uploaded_file2')
+        st.markdown("#### :blue[Upload Seasonal rainfall NetCDF File]" )
+
+        uploaded_file = st.file_uploader("Upload a NetCDF file",  key='uploaded_file5')
+
+        # Check if a file has been uploaded
         if uploaded_file is not None:
-        # Read the uploaded file
-            ds = xr.open_dataset(io.BytesIO(uploaded_file.read()))
+            try:
+                # Convert the uploaded file to BytesIO
+                file = io.BytesIO(uploaded_file.read())
+                
+                # Use netCDF4 to read the file
+                with nc.Dataset('dummy', mode='r', memory=file.read()) as ds:
+                    # Convert netCDF4 dataset to xarray Dataset
+                    data_current = xr.open_dataset(xr.backends.NetCDF4DataStore(ds))
+
+                    # Get latitude and longitude variables
+                    lon = data_current.coords["Longitude"]
+                    lat = data_current.coords["Latitude"]
+
+                    # Get the variable using netCDF4 dataset
+
+                    var4 = data_current[variable][:, :]
+                   
+
+                    # Get the min and max values of the variable
+                    min_val4 = var4.min().values
+                    max_val4 = var4.max().values
+
+
+            except Exception as e:
+                st.error(f"Error opening dataset: {e}")
+        else:
+            st.info("Please upload a NetCDF file.")
+
+
+   
             
-            
-        st.markdown("#### :blue[Upload previous year seasonal rainfall NetCDF File]" )
-        uploaded_file = st.file_uploader("Choose a NetCDF file", 
-                                        type=["nc"], key='uploaded_file3')
+        st.markdown("#### :blue[Upload previous year rainfall NetCDF File]" )
+
+        uploaded_file = st.file_uploader("Upload a NetCDF file",  key='uploaded_file6')
+
+        # Check if a file has been uploaded
         if uploaded_file is not None:
-        # Read the uploaded file
-            ds_pre = xr.open_dataset(io.BytesIO(uploaded_file.read()))
+            try:
+                # Convert the uploaded file to BytesIO
+                file = io.BytesIO(uploaded_file.read())
+                
+                # Use netCDF4 to read the file
+                with nc.Dataset('dummy', mode='r', memory=file.read()) as ds:
+                    # Convert netCDF4 dataset to xarray Dataset
+                    data_pre = xr.open_dataset(xr.backends.NetCDF4DataStore(ds))
+
+                    # Get latitude and longitude variables
+                    lon = data_pre.coords["Longitude"]
+                    lat = data_pre.coords["Latitude"]
+
+                    # Get the variable using netCDF4 dataset
+
+                    var5 = data_pre[variable][:, :]
+                
+
+                    # Get the min and max values of the variable
+                    min_val5 = var5.min().values
+                    max_val5 = var5.max().values
+
+
+            except Exception as e:
+                st.error(f"Error opening dataset: {e}")
+        else:
+            st.info("Please upload a NetCDF file.")
             
-            
-             # Extract the variables
-            var1 = ds['rfe']
-            var2 = ds_pre['rfe']
+            #  # Extract the variables
+            # var1 = ds['rfe']
+            # var2 = ds_pre['rfe']
+
+        if var4 is not None and var5 is not None:
+
+            rain44 = var4.isel(time=0)
+            rain55 = var5.isel(time=0)
           
 
-            # # Get the rainfall data
-            rain11 = var1.isel(time=0)
-            rain22 = var2.isel(time=0)
-          
+            var66  = rain44 - rain55
 
-            # # Calculate departure, intermediate, and percentage normal rainfall
-            var3  = rain11 - rain22
 
-            lon = ds['lon'].values
-            lat = ds['lat'].values
+            # lon = ds['lon'].values
+            # lat = ds['lat'].values
             
-            data_min = var3.min()
-            data_max = var3.max()
+            data_min = var66.min().values
+            data_max = var66.max().values
             
            
             
@@ -638,16 +809,16 @@ def seasonal_rainfall():
             col1, col2 = st.columns(2)
             
             with col1:
-                 dry_threshold = st.number_input("Enter the value below which it is classified as 'Drier than last year':", value=-25)
+                    dry_threshold = st.number_input("Enter the value below which it is classified as Drier than last year:", value=-25)
             with col2:
-                wet_threshold = st.number_input("Enter the value above which it is classified as 'Wetter than last year':", value=25)
+                wet_threshold = st.number_input("Enter the value above which it is classified as Wetter than last year:", value=25)
 
-               
+                
                 
             if dry_threshold >= wet_threshold:
                 st.error("Dry threshold must be less than wet threshold. Please adjust the values.")
 
-             # Create custom colormap with distinct colors
+                # Create custom colormap with distinct colors
             # colors = ['royalblue', 'lightgrey', 'darkorange']  # Adjust colors as desired
             # cmap = ListedColormap(colors)
 
@@ -661,14 +832,11 @@ def seasonal_rainfall():
             # Define bins based on thresholds
             bins = [data_min, dry_threshold, wet_threshold, data_max]
 
-            
-            
-            
             st.markdown("---")
 
             st.markdown("#### :blue[Display Departure of Seasonal Rainfall ]" )  
             if ds is not None:
-                if st.checkbox("Plot Seasonal Departure Rainfall", key="_display"):
+                if st.checkbox("Plot Seasonal Departure of Rainfall", key="_display"):
                     fig, ax = plt.subplots(figsize=(12, 8), 
                                             subplot_kw={'projection': ccrs.PlateCarree()},
                                             #facecolor=bg_color,
@@ -685,7 +853,7 @@ def seasonal_rainfall():
                     ax.add_feature(cfeature.COASTLINE)
                     ax.add_feature(cfeature.LAND, edgecolor='black', color=bg_color)
                     ax.add_feature(cfeature.OCEAN, edgecolor='black', color='lightblue')
-                    #ax.add_feature(cfeature.BORDERS, edgecolor='black', linewidth=1.5)
+                    # ax.add_feature(cfeature.BORDERS, edgecolor='black', linewidth=1.5)
 
                     # Plot the selected region
                     if option == 'Country Boundary':
@@ -695,10 +863,10 @@ def seasonal_rainfall():
 
                     # Choose plotting method
                     if plot_type == "Contour":
-                        contour = ax.contourf(lon, lat, var3, 
-                                              levels=bins, 
-                                              cmap=cmap, 
-                                              extend=colorbar_extend.lower())
+                        contour = ax.contourf(lon, lat, var66, 
+                                                levels=bins, 
+                                                cmap=cmap, 
+                                                extend=colorbar_extend.lower())
 
                         cbar = plt.colorbar(contour, 
                                             orientation=colorbar_orientation.lower(), 
@@ -715,11 +883,11 @@ def seasonal_rainfall():
                         cbar.set_ticks([-75, 0, 75])
                         cbar.set_ticklabels(['Below Normal', 'Normal', 'Above Normal'])
                         
-                       
-                       
+                        
+                        
                     elif plot_type == "Pcolormesh":
-                        pcolormesh = ax.pcolormesh(lon, lat, var3, 
-                                                   cmap=cmap)
+                        pcolormesh = ax.pcolormesh(lon, lat, var66, 
+                                                    cmap=cmap)
                         cbar = plt.colorbar(pcolormesh, 
                                             orientation=colorbar_orientation.lower(),
                                             pad=colorbar_pad, 
@@ -738,8 +906,8 @@ def seasonal_rainfall():
                         
                     elif plot_type == "Scatter":
                         lon, lat = np.meshgrid(lon, lat)
-                        scatter = ax.scatter(lon, lat, c=var3,
-                                             cmap=cmap)
+                        scatter = ax.scatter(lon, lat, c=var66,
+                                                cmap=cmap)
                         cbar = plt.colorbar(scatter, orientation=colorbar_orientation.lower(),
                                             pad=colorbar_pad, 
                                             aspect=aspect, 
@@ -785,7 +953,7 @@ def seasonal_rainfall():
                         gl.ylabel_style = {'size': 12}
 
                     # Add a title
-                    ax.set_title(f' Departure of  {season} rainfall from previous year', fontsize=20, y=1.01, fontname=title_font)
+                    ax.set_title(f'Departure of {season} rainfall from previous year', fontsize=20, y=1.01, fontname=title_font)
 
                     ax.set_xlabel('Longitude', fontsize=14)
                     ax.set_ylabel('Latitude', fontsize=14)
