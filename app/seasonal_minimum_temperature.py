@@ -1,14 +1,12 @@
 import streamlit as st
-import xarray as xr
 import numpy as np
+import geopandas as gpd
+import xarray as xr 
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
-import geopandas as gpd
-from matplotlib.colors import BoundaryNorm, ListedColormap
-import matplotlib.colors as mcolors
-
 import io
+import netCDF4 as nc
 
 
 def seasonal_minimum_temperature():
@@ -23,7 +21,7 @@ def seasonal_minimum_temperature():
 
     lon = None
     lat = None
-    ds_temp_min = None
+    data_tmin = None
     
     if variable_type == 'Minimum Temperature':
         variable = 'Mean Minimum Temperature'
@@ -36,18 +34,41 @@ def seasonal_minimum_temperature():
         
         
         st.markdown("#### :blue[Upload seasonal minimum temperature NetCDF File]" )
-        uploaded_file = st.file_uploader("Choose a NetCDF file",
-                                        type=["nc"], key='uploaded_file1')
-        if uploaded_file is not None:
-        # Read the uploaded file
-            ds = xr.open_dataset(io.BytesIO(uploaded_file.read()), engine='netcdf4')
 
-            # ds_temp_min = xr.open_dataset(io.BytesIO(uploaded_file.read()))
-            temp_min = ds_temp_min[variable][:, :]
-            lon = ds_temp_min['Longitude'][:]
-            lat = ds_temp_min['Latitude'][:]
+        uploaded_file = st.file_uploader("Upload a NetCDF file")
+
+        # Check if a file has been uploaded
+        if uploaded_file is not None:
+            try:
+                # Convert the uploaded file to BytesIO
+                file = io.BytesIO(uploaded_file.read())
+                
+                # Use netCDF4 to read the file
+                with nc.Dataset('dummy', mode='r', memory=file.read()) as ds:
+                    # Convert netCDF4 dataset to xarray Dataset
+                    data_tmin = xr.open_dataset(xr.backends.NetCDF4DataStore(ds))
+
+                    # Get latitude and longitude variables
+                    lon = data_tmin.coords["Longitude"]
+                    lat = data_tmin.coords["Latitude"]
+
+                    # Get the variable using netCDF4 dataset
+
+                    tmin = data_tmin[variable][:, :]
+                   
+
+                    # Get the min and max values of the variable
+                    min_val = tmin.min().values
+                    max_val = tmin.max().values
+
+          
+
+            except Exception as e:
+                st.error(f"Error opening dataset: {e}")
+        else:
+            st.info("Please upload a NetCDF file.")
         
-        
+
      
             
         st.markdown("---")
@@ -113,9 +134,9 @@ def seasonal_minimum_temperature():
         st.markdown("---")
         
         
-        st.markdown("#### :blue[Display Season Mean Minimum Temperature]" )  
-        if ds_temp_min is not None:
-            if st.checkbox("Plot Season Mean Minimum Temperature", key="temp_display"):
+        st.markdown("#### :blue[Display Seasonal Mean Minimum Temperature]" )  
+        if data_tmin is not None:
+            if st.checkbox("Plot Seasonal Mean Minimum Temperature", key="temp_display_min"):
                 fig, ax = plt.subplots(figsize=(12, 8), 
                                         subplot_kw={'projection': ccrs.PlateCarree()},
                                         #facecolor=bg_color,
@@ -148,10 +169,10 @@ def seasonal_minimum_temperature():
 
                 # Choose plotting method
                 if plot_type == "Contour":
-                    contour = ax.contourf(lon, lat, temp_min, 
-                                            levels=np.linspace(temp_min.min(),
-                                                                temp_min.max(), 
-                                                                contour_levels),
+                    contour = ax.contourf(lon, lat, tmin, 
+                                            levels=np.linspace(min_val, 
+                                                               max_val,
+                                                               contour_levels),
                                             cmap=cmap, 
                                             extend=colorbar_extend.lower())
                     cbar = plt.colorbar(contour, orientation=colorbar_orientation.lower(), 
@@ -159,14 +180,14 @@ def seasonal_minimum_temperature():
                                         aspect=aspect, 
                                         shrink=colorbar_shrink)
                 elif plot_type == "Pcolormesh":
-                    pcolormesh = ax.pcolormesh(lon, lat, temp_min, cmap=cmap)
+                    pcolormesh = ax.pcolormesh(lon, lat, tmin, cmap=cmap)
                     cbar = plt.colorbar(pcolormesh, 
                                         orientation=colorbar_orientation.lower(),
                                         pad=colorbar_pad, aspect=aspect, 
                                         shrink=colorbar_shrink)
                 elif plot_type == "Scatter":
                     lon, lat = np.meshgrid(lon, lat)
-                    scatter = ax.scatter(lon, lat, c=temp_min, cmap=cmap)
+                    scatter = ax.scatter(lon, lat, c=tmin, cmap=cmap)
                     cbar = plt.colorbar(scatter, orientation=colorbar_orientation.lower(),
                                         pad=colorbar_pad, 
                                         aspect=aspect, 
@@ -233,14 +254,6 @@ def seasonal_minimum_temperature():
                     mime="image/png"
                 )
         
-        
-    
-            
-            
-        
-
-        
-            
         
     
 if __name__ == "__main__":
