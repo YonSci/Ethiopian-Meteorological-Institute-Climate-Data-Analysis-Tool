@@ -1,14 +1,12 @@
 import streamlit as st
-import xarray as xr
 import numpy as np
+import geopandas as gpd
+import xarray as xr 
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
-import geopandas as gpd
-from matplotlib.colors import BoundaryNorm, ListedColormap
-import matplotlib.colors as mcolors
-
 import io
+import netCDF4 as nc
 
 
 def seasonal_maximum_temperature():
@@ -21,9 +19,10 @@ def seasonal_maximum_temperature():
     st.markdown("---")
     
 
+
     lon = None
     lat = None
-    ds_temp_max = None
+    data_tmax = None
     
     if variable_type == 'Maximum Temperature':
         variable = 'Mean Maximum Temperature'
@@ -36,16 +35,40 @@ def seasonal_maximum_temperature():
         
         
         st.markdown("#### :blue[Upload seasonal maximum temperature NetCDF File]" )
-        uploaded_file = st.file_uploader("Choose a NetCDF file",
-                                        type=["nc"], key='uploaded_file1')
+
+        uploaded_file = st.file_uploader("Upload a NetCDF file")
+
+        # Check if a file has been uploaded
         if uploaded_file is not None:
-        # Read the uploaded file
-            ds_temp_max = xr.open_dataset(io.BytesIO(uploaded_file.read()))
-            temp_max = ds_temp_max[variable][:, :]
-            lon = ds_temp_max['Longitude'][:]
-            lat = ds_temp_max['Latitude'][:]
-        
-        
+            try:
+                # Convert the uploaded file to BytesIO
+                file = io.BytesIO(uploaded_file.read())
+                
+                # Use netCDF4 to read the file
+                with nc.Dataset('dummy', mode='r', memory=file.read()) as ds:
+                    # Convert netCDF4 dataset to xarray Dataset
+                    data_tmax = xr.open_dataset(xr.backends.NetCDF4DataStore(ds))
+
+                    # Get latitude and longitude variables
+                    lon = data_tmax.coords["Longitude"]
+                    lat = data_tmax.coords["Latitude"]
+
+                    # Get the variable using netCDF4 dataset
+
+                    tmax = data_tmax[variable][:, :]
+                   
+
+                    # Get the min and max values of the variable
+                    min_val = tmax.min().values
+                    max_val = tmax.max().values
+
+          
+
+            except Exception as e:
+                st.error(f"Error opening dataset: {e}")
+        else:
+            st.info("Please upload a NetCDF file.")
+
      
             
         st.markdown("---")
@@ -111,9 +134,9 @@ def seasonal_maximum_temperature():
         st.markdown("---")
         
         
-        st.markdown("#### :blue[Display Season Mean Maximum Temperature]" )  
-        if ds_temp_max is not None:
-            if st.checkbox("Plot Season Mean Maximum Temperature", key="temp_display"):
+        st.markdown("#### :blue[Display Seasonal Mean Maximum Temperature]" )  
+        if data_tmax is not None:
+            if st.checkbox("Plot Seasonal Mean Maximum Temperature", key="temp_display"):
                 fig, ax = plt.subplots(figsize=(12, 8), 
                                         subplot_kw={'projection': ccrs.PlateCarree()},
                                         #facecolor=bg_color,
@@ -146,10 +169,10 @@ def seasonal_maximum_temperature():
 
                 # Choose plotting method
                 if plot_type == "Contour":
-                    contour = ax.contourf(lon, lat, temp_max, 
-                                            levels=np.linspace(temp_max.min(),
-                                                                temp_max.max(), 
-                                                                contour_levels),
+                    contour = ax.contourf(lon, lat, tmax, 
+                                            levels=np.linspace(min_val,
+                                                               max_val, 
+                                                               contour_levels),
                                             cmap=cmap, 
                                             extend=colorbar_extend.lower())
                     cbar = plt.colorbar(contour, orientation=colorbar_orientation.lower(), 
@@ -157,14 +180,14 @@ def seasonal_maximum_temperature():
                                         aspect=aspect, 
                                         shrink=colorbar_shrink)
                 elif plot_type == "Pcolormesh":
-                    pcolormesh = ax.pcolormesh(lon, lat, temp_max, cmap=cmap)
+                    pcolormesh = ax.pcolormesh(lon, lat, tmax, cmap=cmap)
                     cbar = plt.colorbar(pcolormesh, 
                                         orientation=colorbar_orientation.lower(),
                                         pad=colorbar_pad, aspect=aspect, 
                                         shrink=colorbar_shrink)
                 elif plot_type == "Scatter":
                     lon, lat = np.meshgrid(lon, lat)
-                    scatter = ax.scatter(lon, lat, c=temp_max, cmap=cmap)
+                    scatter = ax.scatter(lon, lat, c=tmax, cmap=cmap)
                     cbar = plt.colorbar(scatter, orientation=colorbar_orientation.lower(),
                                         pad=colorbar_pad, 
                                         aspect=aspect, 
@@ -230,7 +253,6 @@ def seasonal_maximum_temperature():
                     file_name=f"Maximum_temperature_plot_{variable_type}_{time_step}.png",
                     mime="image/png"
                 )
-        
         
     
             
